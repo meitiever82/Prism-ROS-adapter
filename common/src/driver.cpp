@@ -548,9 +548,11 @@ struct Driver::Impl {
         !info.sensor_board_online) {
       throw std::runtime_error("sensor-board is offline after time sync");
     }
-    uint8_t camera_count = info.detected_camera_count;
-    if (camera_count == 0 || camera_count > 4) camera_count = 4;
-    camera_mask = static_cast<uint8_t>((1u << camera_count) - 1u);
+    // Cameras can occupy non-contiguous slots (e.g. present_mask 0b0101 =
+    // slots 0 and 2). Deriving the mask from the count would request empty
+    // slots and make sensor-board capture enable time out (-110).
+    camera_mask = static_cast<uint8_t>(info.camera_present_mask & 0x0fu);
+    if (camera_mask == 0u) camera_mask = 0x0fu;
 
     ensureStreamObjects(context);
   }
@@ -997,9 +999,11 @@ struct Driver::Impl {
       throw std::runtime_error("sensor-board is offline");
     }
 
-    uint8_t camera_count = info.detected_camera_count;
-    if (camera_count == 0 || camera_count > 4) camera_count = 4;
-    camera_mask = static_cast<uint8_t>((1u << camera_count) - 1u);
+    // Cameras can occupy non-contiguous slots (e.g. present_mask 0b0101 =
+    // slots 0 and 2). Deriving the mask from the count would request empty
+    // slots and make sensor-board capture enable time out (-110).
+    camera_mask = static_cast<uint8_t>(info.camera_present_mask & 0x0fu);
+    if (camera_mask == 0u) camera_mask = 0x0fu;
 
     std::unique_ptr<prism::ImuStream> imu_stream;
     std::unique_ptr<prism::LidarStream> lidar_stream;

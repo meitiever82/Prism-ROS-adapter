@@ -4,5 +4,7 @@ ros1_ws/install/
 ros2_ws/build/
 ros2_ws/install/
 ros2_ws/log/
+build/
 build-common/
+build_common/
 .DS_Store

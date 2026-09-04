@@ -20,6 +20,28 @@ find_package(prism_ros_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+
+# Locate the bundled binary SDK prefix automatically so a bare `colcon build`
+# works out of the box. Precedence: explicit PrismUsbSdk_DIR / CMAKE_PREFIX_PATH
+# from the caller > PRISM_USB_SDK_PREFIX env (documented in README) > newest
+# matching in-repo prefix under third_party/Prism-SDK/runtime/ros/.
+if(NOT PrismUsbSdk_DIR)
+  if(DEFINED ENV{PRISM_USB_SDK_PREFIX})
+    list(APPEND CMAKE_PREFIX_PATH "$ENV{PRISM_USB_SDK_PREFIX}")
+  else()
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+      set(_prism_arch_tag "arm64")
+    else()
+      set(_prism_arch_tag "x64")
+    endif()
+    set(_prism_sdk_prefix
+      "${CMAKE_CURRENT_SOURCE_DIR}/../../../third_party/Prism-SDK/runtime/ros/linux-${_prism_arch_tag}")
+    if(EXISTS "${_prism_sdk_prefix}/lib/cmake/PrismUsbSdk")
+      list(APPEND CMAKE_PREFIX_PATH "${_prism_sdk_prefix}")
+      message(STATUS "Prism USB SDK prefix (bundled): ${_prism_sdk_prefix}")
+    endif()
+  endif()
+endif()
 find_package(PrismUsbSdk 1.0.0 EXACT CONFIG REQUIRED)
 
 add_executable(prism_ros_driver_node

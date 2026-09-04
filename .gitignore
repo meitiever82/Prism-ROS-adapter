@@ -8,3 +8,4 @@ build/
 build-common/
 build_common/
 .DS_Store
+third_party/img/prism-rk3576-agent-1.0.0-sensor-board-0.4.16-20260820.img.xz
